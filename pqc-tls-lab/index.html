@@ -97,14 +97,14 @@ footer{border-top:1px solid var(--border);max-width:780px;margin:0 auto;padding:
 
 <div class="hero">
   <div class="hero-kicker">Post-Quantum Cryptography · Lab Report</div>
-  <h1>Cutting through the PQC noise — <em>on my laptop</em></h1>
+  <h1>Cutting through the PQC noise</h1>
   
 
 </div>
 
 <div class="body" style="padding-bottom:0;border-bottom:1px solid var(--border)">
   <h2 class="first">What should be prioritised?</h2>
-  <p>Over the last few months I have been immersed in PQC from every angle imaginable. NIST, CNSA, UK NCSC, CISA and other standards bodies and guidance articles, crypto agility frameworks published by cryptography and quantum-safe experts, position papers, vendor whitepapers, cryptographic posture management platforms, and discovery and inventory tooling — I have read through most of it. The volume and breadth of material reflects how seriously the industry is taking this shift. It also reflects how much noise has gathered around a genuinely important problem.</p>
+  <p>Over the last few months I have been immersed in PQC from every angle imaginable. NIST, CNSA, UK NCSC, CISA and other standards and regulatory bodies, crypto agility frameworks published by cryptography and quantum-safe experts, position papers, vendor whitepapers, cryptographic posture management platforms, and discovery and inventory tooling — I have read through most of it. The volume and breadth of material reflects how seriously the industry is taking this shift. It also reflects how much noise has gathered around a genuinely important problem.</p>
   <p>What struck me was the sheer range of signals coming in at once: genuine technical urgency sitting right next to significant marketing hype, real prioritisation problems buried under an avalanche of "harvest now, decrypt later" anxiety, and vendors pitching discovery tools before most organisations even have a clear view of what they are trying to discover.</p>
   <p>Somewhere in the middle of all that, a few practical questions kept surfacing:</p>
   <div class="pullquote">
@@ -128,7 +128,7 @@ footer{border-top:1px solid var(--border);max-width:780px;margin:0 auto;padding:
   <p>Everything runs on Ubuntu 24.04 (WSL2 on Windows 11) on the HP Envy i7 — no cloud, no dedicated server. The core components are the Open Quantum Safe project's <strong>liboqs 0.10.1</strong> and <strong>oqs-provider 0.6.1</strong>, which bridges liboqs into OpenSSL's provider architecture. Scenario B runs inside the <code>openquantumsafe/oqs-ossl3</code> Docker image to work around an OpenSSL 3.0.x PEM encoder limitation for hybrid KEM key types.</p>
 
   <div class="screenshot">
-    <div class="screenshot-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="title">kishorechavali@Chavali — openssl list -providers</span></div>
+    <div class="screenshot-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="title">Terminal — openssl list -providers</span></div>
     <img src="screenshot1.png" alt="OQS Provider Verification"/>
     <div class="screenshot-caption">Fig 1 — Both OpenSSL default provider (3.0.13) and oqsprovider (0.6.1) active. ML-KEM-768 and x25519_mlkem768 available.</div>
   </div>
@@ -164,7 +164,7 @@ sudo cp build/lib/oqsprovider.so /usr/lib/x86_64-linux-gnu/ossl-modules/</pre>
 
   <h2>Certificate size — the first surprise</h2>
   <div class="screenshot">
-    <div class="screenshot-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="title">kishorechavali@Chavali — cert size comparison</span></div>
+    <div class="screenshot-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="title">Terminal — cert size comparison</span></div>
     <img src="screenshot2.png" alt="Certificate size comparison"/>
     <div class="screenshot-caption">Fig 2 — Scenario A cert (ECDSA P-256): 550 bytes. Scenario B cert (ML-DSA-65): 7,603 bytes. 13.8× increase.</div>
   </div>
@@ -179,14 +179,14 @@ sudo cp build/lib/oqsprovider.so /usr/lib/x86_64-linux-gnu/ossl-modules/</pre>
 
   <h2>Scenario A handshake — KEM only</h2>
   <div class="screenshot">
-    <div class="screenshot-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="title">kishorechavali@Chavali — Scenario A handshake</span></div>
+    <div class="screenshot-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="title">Terminal — Scenario A handshake</span></div>
     <img src="screenshot3.png" alt="Scenario A TLS handshake"/>
     <div class="screenshot-caption">Fig 3 — Scenario A: x25519_mlkem768 curve negotiated. Classical ECDSA cert. Verify return code: 0 (ok).</div>
   </div>
 
   <h2>Scenario B handshake — KEM + PQ Auth</h2>
   <div class="screenshot">
-    <div class="screenshot-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="title">kishorechavali@Chavali — Scenario B handshake</span></div>
+    <div class="screenshot-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="title">Terminal — Scenario B handshake</span></div>
     <img src="screenshot4.png" alt="Scenario B TLS handshake"/>
     <div class="screenshot-caption">Fig 4 — Scenario B: x25519_mlkem768 curve + ML-DSA-65 cert chain. PQ CA verified. Verify return code: 0 (ok).</div>
   </div>
@@ -194,7 +194,7 @@ sudo cp build/lib/oqsprovider.so /usr/lib/x86_64-linux-gnu/ossl-modules/</pre>
   <h2>Benchmark results</h2>
   <p>50 handshakes per scenario, loopback interface, measured end-to-end with Python <code>time.perf_counter()</code>.</p>
   <div class="screenshot">
-    <div class="screenshot-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="title">kishorechavali@Chavali — benchmark results</span></div>
+    <div class="screenshot-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="title">Terminal — benchmark results</span></div>
     <img src="screenshot5.png" alt="Benchmark results"/>
     <div class="screenshot-caption">Fig 5 — Full benchmark output. 50 handshakes per scenario. HP Envy i7, Ubuntu 24.04 WSL2.</div>
   </div>
@@ -211,14 +211,14 @@ sudo cp build/lib/oqsprovider.so /usr/lib/x86_64-linux-gnu/ossl-modules/</pre>
 
   <h2>Algorithm speed — raw crypto</h2>
   <div class="screenshot">
-    <div class="screenshot-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="title">kishorechavali@Chavali — openssl speed ecdsap256</span></div>
+    <div class="screenshot-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="title">Terminal — openssl speed ecdsap256</span></div>
     <img src="screenshot6.png" alt="Algorithm speed"/>
     <div class="screenshot-caption">Fig 6 — ECDSA P-256 baseline: 35,892 sign/s · 9,877 verify/s. ML-KEM-768 encapsulation is similarly fast — confirmed by Scenario A handshake results.</div>
   </div>
 
   <h2>Key takeaways for security architects</h2>
   <ul class="takeaway-list">
-    <li><span class="takeaway-num">01</span><span><strong>Start Scenario A now.</strong> Hybrid KEM (X25519+MLKEM768) is already in Chrome, Cloudflare, and AWS. Near-zero performance cost. No PKI changes. The IETF hybrid design draft (0x11eb) is the emerging standard. There is no good reason to wait.</span></li>
+    <li><span class="takeaway-num">01</span><span><strong>Start Scenario A now.</strong> Hybrid KEM (X25519+MLKEM768) is already in Chrome, Cloudflare, and AWS. Near-zero performance cost. No PKI changes. The IETF hybrid KEM draft is the emerging standard. There is no good reason to wait.</span></li>
     <li><span class="takeaway-num">02</span><span><strong>Scenario B needs a PKI programme, not a config change.</strong> ML-DSA-65 cert sizes will cascade through your CA hierarchy, OCSP infrastructure, CRL distribution, WAF buffer configs, and any system that stores or transmits certs. Size up the blast radius before you migrate.</span></li>
     <li><span class="takeaway-num">03</span><span><strong>"Harvest now, decrypt later" targets the KEM — not the signature.</strong> The quantum threat to confidentiality is active now. The threat to authentication has a longer horizon. Fix the KEM first — that is Scenario A.</span></li>
     <li><span class="takeaway-num">04</span><span><strong>You cannot migrate what you have not inventoried.</strong> Build a Cryptographic Bill of Materials (CBOM) before you migrate. Know every TLS endpoint, every cipher suite, every cert algorithm, every HSM key type in your estate. Discovery is the hard part — migration is mechanical once you have the map.</span></li>
