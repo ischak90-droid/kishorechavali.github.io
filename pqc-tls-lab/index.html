@@ -114,7 +114,7 @@ footer{border-top:1px solid var(--border);max-width:780px;margin:0 auto;padding:
   </div>
   <p>Discovery and inventory are clearly foundational — you cannot migrate what you have not mapped. But I wanted to go a step further and understand the migration patterns themselves: what is genuinely easy to do today, what requires planning, and where the real operational cost lies.</p>
   <p>So I set up a small lab on my personal HP Envy i7, built the Open Quantum Safe stack from source, generated both classical and post-quantum certificate chains, and ran two distinct TLS migration scenarios against each other. What follows are the actual results — commands, screenshots, handshake output, and benchmark numbers — with no vendor involvement and no synthetic environment.</p>
-  <p style="color:var(--muted);font-size:15px">This is a practitioner's PoC, not a production deployment guide. The goal is to build an informed intuition for the migration decision — and to give other architects something concrete to point at when the conversation turns to "but what does PQC actually cost?"</p>
+  
 </div>
 
 <div class="stat-bar">
@@ -219,12 +219,12 @@ sudo cp build/lib/oqsprovider.so /usr/lib/x86_64-linux-gnu/ossl-modules/</pre>
     <div class="screenshot-caption">Fig 6 — ECDSA P-256 baseline: 35,892 sign/s · 9,877 verify/s. ML-KEM-768 encapsulation is similarly fast — confirmed by Scenario A handshake results.</div>
   </div>
 
-  <h2>Key takeaways for security architects</h2>
+  <h2>My take — four things worth prioritising</h2>
   <ul class="takeaway-list">
-    <li><span class="takeaway-num">01</span><span><strong>Start Scenario A now.</strong> Hybrid KEM (X25519+MLKEM768) is already in Chrome, Cloudflare, and AWS. Near-zero performance cost. No PKI changes. The IETF hybrid KEM draft is the emerging standard. There is no good reason to wait.</span></li>
-    <li><span class="takeaway-num">02</span><span><strong>Scenario B needs a PKI programme, not a config change.</strong> ML-DSA-65 cert sizes will cascade through your CA hierarchy, OCSP infrastructure, CRL distribution, WAF buffer configs, and any system that stores or transmits certs. Size up the blast radius before you migrate.</span></li>
-    <li><span class="takeaway-num">03</span><span><strong>"Harvest now, decrypt later" targets the KEM — not the signature.</strong> The quantum threat to confidentiality is active now. The threat to authentication has a longer horizon. Fix the KEM first. That is Scenario A, and it is achievable today.</span></li>
-    <li><span class="takeaway-num">04</span><span><strong>You cannot migrate what you have not inventoried.</strong> Build a Cryptographic Bill of Materials (CBOM) before you migrate. Know every TLS endpoint, every cipher suite, every cert algorithm, every HSM key type in your estate. Discovery is the hard part — migration is mechanical once you have the map.</span></li>
+    <li><span class="takeaway-num">01</span><span><strong>Start with the key exchange.</strong> Upgrading to a hybrid KEM — combining classical X25519 with ML-KEM-768 — is the lowest friction step available today. Chrome, Cloudflare and AWS are already shipping it. The performance cost is negligible, no certificate changes are required, and the IETF hybrid KEM draft provides a clear interoperability path. In my view, this is the right place to start.</span></li>
+    <li><span class="takeaway-num">02</span><span><strong>Post-quantum certificates need a programme, not a config change.</strong> ML-DSA-65 certificates are nearly 14 times larger than their ECDSA counterparts — and that size propagates through your CA hierarchy, OCSP and CRL infrastructure, load balancers, WAF buffer configs, and any system that processes or stores certificates at scale. This requires a planned PKI programme with proper impact assessment before a single certificate is rotated.</span></li>
+    <li><span class="takeaway-num">03</span><span><strong>Understand which threat you are solving for.</strong> The harvest now, decrypt later threat is real and active today — adversaries are already intercepting and storing encrypted traffic with the intent to decrypt it once quantum computing matures. This threat targets the key exchange, not the certificate. Fixing the KEM addresses this directly and immediately. The threat to authentication — where a quantum computer could forge signatures — has a longer horizon and can be planned accordingly.</span></li>
+    <li><span class="takeaway-num">04</span><span><strong>Inventory before you migrate.</strong> Before any migration can begin, you need to know what you are migrating. That means building a Cryptographic Bill of Materials (CBOM) — a structured inventory of every TLS endpoint, cipher suite, certificate algorithm, and HSM key type across your estate. This is harder than it sounds, particularly in large or federated environments. In my experience, discovery is where most programmes stall — not because the migration is technically difficult, but because the inventory was never built.</span></li>
   </ul>
 
   <h2>Standards and tools</h2>
