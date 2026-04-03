@@ -217,7 +217,13 @@ sudo cp build/lib/oqsprovider.so /usr/lib/x86_64-linux-gnu/ossl-modules/</pre>
       <tr><td class="row-label">Scenario B — KEM + Auth *</td><td class="val-purple">1.3</td><td class="val-purple">791.31ms</td><td>979.44ms</td><td class="val-amber">7,603 B</td></tr>
     </tbody>
   </table>
-  <div class="callout amber"><strong>* Lab caveat — Scenario B:</strong> The 791ms figure includes Docker container startup overhead (~750ms) per handshake. In a persistent production deployment this overhead disappears entirely. The actual ML-DSA-65 signature verification cost is <strong>~2–5ms</strong>. The real operational cost of Scenario B is the cert size, not the crypto speed.</div>
+  <div class="callout amber">
+  <strong>Understanding the numbers — what HS/sec means</strong>
+  <p style="margin-top:10px;margin-bottom:10px">HS/sec stands for <strong>handshakes per second</strong> — how many complete TLS connections a server can establish in one second. Every HTTPS connection begins with a handshake where the client and server negotiate algorithms, exchange keys and verify the certificate. This metric tells you how much cryptographic overhead is involved in that process.</p>
+  <strong>* Important lab caveat — Scenario B:</strong>
+  <p style="margin-top:10px;margin-bottom:10px">The 1.3 HS/sec and 791ms figures for Scenario B look alarming but are not representative of real-world performance. In this PoC, the benchmark spawned a brand new Docker container for every single handshake — meaning roughly 750ms of container startup time was baked into every measurement. This is a constraint of the lab setup, not a property of the ML-DSA-65 algorithm itself.</p>
+  <p style="margin-bottom:0">Subtract the ~750ms Docker overhead and the actual ML-DSA-65 handshake cost is approximately <strong>~40ms</strong> — roughly 1.5x classical, not 28x. The real operational cost of Scenario B is not speed — it is <strong>certificate size</strong>. At 7,603 bytes versus 550 bytes for ECDSA, every new connection carries nearly 14x more data just for the certificate alone. That is where the planning effort needs to be focused.</p>
+</div>
   <div class="callout"><strong>Scenario A is the headline result:</strong> Hybrid KEM (X25519+MLKEM768) is not just acceptable — on loopback it outperforms classical X25519 due to lower latency variance. The migration cost is essentially zero. This is why Chrome, Cloudflare, and AWS are already shipping it in production.</div>
 
   <h2>Algorithm speed — raw crypto</h2>
