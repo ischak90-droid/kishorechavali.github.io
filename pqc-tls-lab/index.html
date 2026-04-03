@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cutting through the PQC noise — Kishore Chavali</title>
+<title>Cutting through the PQC noise</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0d0f12;--surface:#13161b;--surface2:#1a1e25;--border:#252a33;--text:#e2e4e8;--muted:#7a8194;--dim:#454d5f;--green:#1D9E75;--green-dim:#0f3d2d;--purple:#7c6ff7;--purple-dim:#1e1a3f;--amber:#e8a020;--amber-dim:#2d1f00;--mono:"IBM Plex Mono",monospace;--serif:"Fraunces",serif;--sans:"DM Sans",sans-serif}
@@ -90,7 +90,7 @@ footer{border-top:1px solid var(--border);max-width:780px;margin:0 auto;padding:
 <body>
 <header>
   <div class="header-inner">
-    <div class="site-name">kishore.chavali // security-architect</div>
+    <div class="site-name">PQC Lab Notes</div>
     <div class="header-tags"><span class="htag">PQC</span><span class="htag">TLS</span><span class="htag">FIPS 203/204</span></div>
   </div>
 </header>
@@ -98,15 +98,13 @@ footer{border-top:1px solid var(--border);max-width:780px;margin:0 auto;padding:
 <div class="hero">
   <div class="hero-kicker">Post-Quantum Cryptography · Lab Report</div>
   <h1>Cutting through the PQC noise — <em>on my laptop</em></h1>
-  <p class="hero-sub">Real handshakes. Real numbers. Two migration scenarios tested on an HP Envy i7.</p>
-  <div class="hero-meta">
-    <span>Kishore Chavali</span><span>·</span><span>Data Security Architect</span><span>·</span><span>Bangalore, India</span><span>·</span><span>April 2025</span>
-  </div>
+  
+
 </div>
 
 <div class="body" style="padding-bottom:0;border-bottom:1px solid var(--border)">
-  <h2 class="first">Why I built this lab</h2>
-  <p>Over the past few months, PQC has been difficult to ignore — and I mean that in the best possible way. I have worked through the NIST finalised standards, NCSC and CISA migration guidance, crypto agility frameworks, position papers, vendor whitepapers, and a growing wave of cryptographic posture management and discovery tooling. The breadth of material reflects how seriously the industry is taking this shift. It also reflects how much noise has gathered around a genuinely important problem.</p>
+  <h2 class="first">What should be prioritised?</h2>
+  <p>Over the last few months I have been immersed in PQC from every angle imaginable. NIST, CNSA, UK NCSC, CISA and other standards bodies and guidance articles, crypto agility frameworks published by cryptography and quantum-safe experts, position papers, vendor whitepapers, cryptographic posture management platforms, and discovery and inventory tooling — I have read through most of it. The volume and breadth of material reflects how seriously the industry is taking this shift. It also reflects how much noise has gathered around a genuinely important problem.</p>
   <p>What struck me was the sheer range of signals coming in at once: genuine technical urgency sitting right next to significant marketing hype, real prioritisation problems buried under an avalanche of "harvest now, decrypt later" anxiety, and vendors pitching discovery tools before most organisations even have a clear view of what they are trying to discover.</p>
   <p>Somewhere in the middle of all that, a few practical questions kept surfacing:</p>
   <div class="pullquote">
@@ -240,7 +238,7 @@ sudo cp build/lib/oqsprovider.so /usr/lib/x86_64-linux-gnu/ossl-modules/</pre>
 </div>
 
 <footer>
-  <div class="footer-author">Kishore Chavali · Data Security Architect · Bangalore</div>
+  <div class="footer-author"></div>
   <div class="footer-tags">
     <span class="footer-tag">#PQC</span><span class="footer-tag">#TLS</span><span class="footer-tag">#CryptoAgility</span><span class="footer-tag">#ZeroTrust</span><span class="footer-tag">#PKI</span><span class="footer-tag">#NIST</span><span class="footer-tag">#Cybersecurity</span>
   </div>
