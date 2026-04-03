@@ -96,7 +96,7 @@ footer{border-top:1px solid var(--border);max-width:780px;margin:0 auto;padding:
 </header>
 
 <div class="hero">
-  <div class="hero-kicker">Post-Quantum Cryptography · Lab Report</div>
+  <div class="hero-kicker">Post-Quantum Cryptography · Practitioner Lab Report</div>
   <h1>Cutting through the PQC noise</h1>
   
 
@@ -104,13 +104,13 @@ footer{border-top:1px solid var(--border);max-width:780px;margin:0 auto;padding:
 
 <div class="body" style="padding-bottom:0;border-bottom:1px solid var(--border)">
   <h2 class="first">What should be prioritised?</h2>
-  <p>Over the last few months I have been immersed in PQC from every angle imaginable. NIST, CNSA, UK NCSC, CISA and other standards and regulatory bodies, crypto agility frameworks published by cryptography and quantum-safe experts, position papers, vendor whitepapers, cryptographic posture management platforms, and discovery and inventory tooling — I have read through most of it. The volume and breadth of material reflects how seriously the industry is taking this shift. It also reflects how much noise has gathered around a genuinely important problem.</p>
+  <p>Over the last few months I have been immersed in PQC from every angle imaginable. NIST, CNSA, UK NCSC, CISA and other standards and regulatory bodies, crypto agility frameworks published by cryptography and quantum-safe experts, position papers, vendor whitepapers, cryptographic posture management platforms, and discovery and inventory tooling — I have read through most of it. The volume and breadth of material reflects two things simultaneously: how seriously the industry is taking this shift, and how much noise has gathered around a genuinely important problem.</p>
   <p>What struck me was the sheer range of signals coming in at once: genuine technical urgency sitting right next to significant marketing hype, real prioritisation problems buried under an avalanche of "harvest now, decrypt later" anxiety, and vendors pitching discovery tools before most organisations even have a clear view of what they are trying to discover.</p>
   <p>Somewhere in the middle of all that, a few practical questions kept surfacing:</p>
   <div class="pullquote">
     <p><em>What actually needs to happen first?</em></p>
     <p><em>What is the minimum viable migration step that builds momentum without requiring a full PKI overhaul?</em></p>
-    <p><em>And what do the NIST algorithms actually cost at the handshake level — on real hardware, not in a vendor benchmark?</em></p>
+    <p><em>And what do these algorithms actually cost at the TLS handshake level — on real hardware, not in a vendor benchmark?</em></p>
   </div>
   <p>Discovery and inventory are clearly foundational — you cannot migrate what you have not mapped. But I wanted to go a step further and understand the migration patterns themselves: what is genuinely easy to do today, what requires planning, and where the real operational cost lies.</p>
   <p>So I set up a small lab on my personal HP Envy i7, built the Open Quantum Safe stack from source, generated both classical and post-quantum certificate chains, and ran two distinct TLS migration scenarios against each other. What follows are the actual results — commands, screenshots, handshake output, and benchmark numbers — with no vendor involvement and no synthetic environment.</p>
@@ -125,7 +125,7 @@ footer{border-top:1px solid var(--border);max-width:780px;margin:0 auto;padding:
 
 <div class="body">
   <h2>The lab stack</h2>
-  <p>Everything runs on Ubuntu 24.04 (WSL2 on Windows 11) on the HP Envy i7 — no cloud, no dedicated server. The core components are the Open Quantum Safe project's <strong>liboqs 0.10.1</strong> and <strong>oqs-provider 0.6.1</strong>, which bridges liboqs into OpenSSL's provider architecture. Scenario B runs inside the <code>openquantumsafe/oqs-ossl3</code> Docker image to work around an OpenSSL 3.0.x PEM encoder limitation for hybrid KEM key types.</p>
+  <p>Everything runs on Ubuntu 24.04 (WSL2 on Windows 11) on the HP Envy i7 — no cloud, no dedicated server. The core components are the Open Quantum Safe project's <strong>liboqs 0.10.1</strong> and <strong>oqs-provider 0.6.1</strong>, which bridges liboqs into OpenSSL's provider architecture. Scenario B runs inside the <code>openquantumsafe/oqs-ossl3</code> Docker image due to a PEM encoding limitation in OpenSSL 3.0.x that prevents post-quantum hybrid keys from being written to disk in standard format.</p>
 
   <div class="screenshot">
     <div class="screenshot-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="title">Terminal — openssl list -providers</span></div>
@@ -149,11 +149,14 @@ sudo cp build/lib/oqsprovider.so /usr/lib/x86_64-linux-gnu/ossl-modules/</pre>
 
   <h2>The two scenarios</h2>
   <p>I tested two distinct migration paths that reflect the actual decision enterprises face today.</p>
+
+  <p>In TLS, there are two distinct cryptographic functions that need to be addressed on the road to quantum safety. The first is <strong>key exchange</strong> — the mechanism by which client and server agree on a shared secret at the start of every connection. The second is <strong>authentication</strong> — how the server proves its identity to the client using a certificate signed by a trusted authority. Today, both rely on classical algorithms that a sufficiently capable quantum computer could break. They require separate migration strategies, carry different risk timelines, and have very different operational costs. That is exactly what these two scenarios test.</p>
   <div class="scenario-grid">
     <div class="scenario-box green-b">
       <div class="scenario-title green">Scenario A — KEM only</div>
       <div class="scenario-detail">Replace key exchange with <strong>X25519+MLKEM768</strong> hybrid (FIPS 203). Classical ECDSA P-256 certificate chain stays unchanged. Zero PKI impact.</div>
       <div style="margin-top:10px"><span class="tag tag-green">ML-KEM-768</span><span class="tag tag-green">x25519 hybrid</span><span class="tag tag-green">ECDSA cert</span></div>
+      <p style="margin-top:12px;font-size:13px;color:#7a9e8a;line-height:1.6">The existing classical certificate is still used to authenticate the server — so public key cryptography remains classical. However, the shared secret established during the handshake is generated using ML-KEM-768, making it quantum-safe. This directly addresses the <strong style="color:#9FE1CB">Harvest Now, Decrypt Later (HNDL)</strong> threat, where adversaries intercept and store encrypted traffic today with the intent to decrypt it once a quantum computer is available.</p>
     </div>
     <div class="scenario-box purple-b">
       <div class="scenario-title purple">Scenario B — KEM + Auth</div>
@@ -162,7 +165,7 @@ sudo cp build/lib/oqsprovider.so /usr/lib/x86_64-linux-gnu/ossl-modules/</pre>
     </div>
   </div>
 
-  <h2>Certificate size — the first surprise</h2>
+  <h2>Certificate size — where the real cost hides</h2>
   <div class="screenshot">
     <div class="screenshot-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="title">Terminal — cert size comparison</span></div>
     <img src="screenshot2.png" alt="Certificate size comparison"/>
@@ -206,7 +209,7 @@ sudo cp build/lib/oqsprovider.so /usr/lib/x86_64-linux-gnu/ossl-modules/</pre>
       <tr><td class="row-label">Scenario B — KEM + Auth *</td><td class="val-purple">1.3</td><td class="val-purple">791.31ms</td><td>979.44ms</td><td class="val-amber">7,603 B</td></tr>
     </tbody>
   </table>
-  <div class="callout amber"><strong>* Lab caveat — Scenario B:</strong> The 791ms figure includes Docker container startup overhead (~750ms) per handshake. In a persistent production server this overhead disappears. The actual ML-DSA-65 signature verification cost is <strong>~2–5ms</strong>. The real operational cost of Scenario B is the cert size, not the crypto speed.</div>
+  <div class="callout amber"><strong>* Lab caveat — Scenario B:</strong> The 791ms figure includes Docker container startup overhead (~750ms) per handshake. In a persistent production deployment this overhead disappears entirely. The actual ML-DSA-65 signature verification cost is <strong>~2–5ms</strong>. The real operational cost of Scenario B is the cert size, not the crypto speed.</div>
   <div class="callout"><strong>Scenario A is the headline result:</strong> Hybrid KEM (X25519+MLKEM768) is not just acceptable — on loopback it outperforms classical X25519 due to lower latency variance. The migration cost is essentially zero. This is why Chrome, Cloudflare, and AWS are already shipping it in production.</div>
 
   <h2>Algorithm speed — raw crypto</h2>
@@ -220,7 +223,7 @@ sudo cp build/lib/oqsprovider.so /usr/lib/x86_64-linux-gnu/ossl-modules/</pre>
   <ul class="takeaway-list">
     <li><span class="takeaway-num">01</span><span><strong>Start Scenario A now.</strong> Hybrid KEM (X25519+MLKEM768) is already in Chrome, Cloudflare, and AWS. Near-zero performance cost. No PKI changes. The IETF hybrid KEM draft is the emerging standard. There is no good reason to wait.</span></li>
     <li><span class="takeaway-num">02</span><span><strong>Scenario B needs a PKI programme, not a config change.</strong> ML-DSA-65 cert sizes will cascade through your CA hierarchy, OCSP infrastructure, CRL distribution, WAF buffer configs, and any system that stores or transmits certs. Size up the blast radius before you migrate.</span></li>
-    <li><span class="takeaway-num">03</span><span><strong>"Harvest now, decrypt later" targets the KEM — not the signature.</strong> The quantum threat to confidentiality is active now. The threat to authentication has a longer horizon. Fix the KEM first — that is Scenario A.</span></li>
+    <li><span class="takeaway-num">03</span><span><strong>"Harvest now, decrypt later" targets the KEM — not the signature.</strong> The quantum threat to confidentiality is active now. The threat to authentication has a longer horizon. Fix the KEM first. That is Scenario A, and it is achievable today.</span></li>
     <li><span class="takeaway-num">04</span><span><strong>You cannot migrate what you have not inventoried.</strong> Build a Cryptographic Bill of Materials (CBOM) before you migrate. Know every TLS endpoint, every cipher suite, every cert algorithm, every HSM key type in your estate. Discovery is the hard part — migration is mechanical once you have the map.</span></li>
   </ul>
 
